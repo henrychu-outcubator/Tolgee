@@ -6,4 +6,5 @@ enum class LlmProviderType {
   TOLGEE,
   ANTHROPIC,
   GOOGLE_AI,
+  CUSTOM_OPENAI,
 }

@@ -48,6 +48,7 @@ class LlmProviderService(
   private val internalProperties: InternalProperties,
   private val anthropicApiService: AnthropicApiService,
   private val googleAiApiService: GoogleAiApiService,
+  private val customOpenAiApiService: CustomOpenAiApiService,
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) ?: throw InvalidStateException() }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -204,6 +205,7 @@ class LlmProviderService(
       LlmProviderType.TOLGEE -> tolgeeApiService
       LlmProviderType.ANTHROPIC -> anthropicApiService
       LlmProviderType.GOOGLE_AI -> googleAiApiService
+      LlmProviderType.CUSTOM_OPENAI -> customOpenAiApiService
     }
   }
 

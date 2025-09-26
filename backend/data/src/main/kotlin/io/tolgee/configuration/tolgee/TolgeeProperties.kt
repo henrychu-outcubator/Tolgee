@@ -129,4 +129,8 @@ class TolgeeProperties(
     description = "LLM Providers configuration",
   )
   var llmProperties: LlmProperties = LlmProperties(),
+  @DocProperty(
+    description = "API request logging configuration for external systems",
+  )
+  var apiLogging: ApiLoggingProperties = ApiLoggingProperties(),
 )

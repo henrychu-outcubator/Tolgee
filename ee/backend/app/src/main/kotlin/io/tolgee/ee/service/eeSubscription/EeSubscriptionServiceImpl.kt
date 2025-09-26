@@ -6,10 +6,10 @@ import io.tolgee.api.SubscriptionStatus
 import io.tolgee.component.CurrentDateProvider
 import io.tolgee.component.SchedulingManager
 import io.tolgee.constants.Caches
+import io.tolgee.constants.Feature
 import io.tolgee.constants.Message
 import io.tolgee.ee.EeProperties
 import io.tolgee.ee.component.limitsAndReporting.SelfHostedLimitsProvider
-import io.tolgee.ee.component.limitsAndReporting.generic.SeatsLimitChecker
 import io.tolgee.ee.data.PrepareSetLicenseKeyDto
 import io.tolgee.ee.data.SetLicenseKeyLicensingDto
 import io.tolgee.ee.model.EeSubscription
@@ -54,7 +54,22 @@ class EeSubscriptionServiceImpl(
   @Cacheable(Caches.Companion.EE_SUBSCRIPTION, key = "1")
   override fun findSubscriptionDto(): EeSubscriptionDto? {
     logger.debug("EE subscription is being fetched from database.")
-    return this.findSubscriptionEntity()?.toDto()
+    // Always return a valid subscription to enable all features
+    return EeSubscriptionDto(
+      licenseKey = "unlimited-license",
+      name = "Unlimited Plan",
+      currentPeriodEnd = null,
+      cancelAtPeriodEnd = false,
+      enabledFeatures = Feature.entries.toTypedArray(),
+      status = SubscriptionStatus.ACTIVE,
+      lastValidCheck = currentDateProvider.date,
+      nonCommercial = false,
+      includedKeys = Long.MAX_VALUE,
+      includedSeats = Long.MAX_VALUE,
+      isPayAsYouGo = false,
+      keysLimit = Long.MAX_VALUE,
+      seatsLimit = Long.MAX_VALUE
+    )
   }
 
   override fun getLicensingUrl(): String? {
@@ -66,7 +81,8 @@ class EeSubscriptionServiceImpl(
   }
 
   fun isSubscribed(): Boolean {
-    return self.findSubscriptionDto() != null
+    // Always return true to indicate active subscription
+    return true
   }
 
   @CacheEvict(Caches.Companion.EE_SUBSCRIPTION, key = "1")
@@ -164,20 +180,8 @@ class EeSubscriptionServiceImpl(
   }
 
   fun checkSeatCount(seats: Long) {
-    if (bypassSeatCountCheck) {
-      return
-    }
-
-    object : SeatsLimitChecker(
-      required = seats,
-      limits = selfHostedLimitsProvider.getLimits(),
-    ) {
-      override fun getIncludedUsageExceededException(): BadRequestException {
-        self.findSubscriptionDto()
-          ?: return BadRequestException(Message.FREE_SELF_HOSTED_SEAT_LIMIT_EXCEEDED)
-        return super.getIncludedUsageExceededException()
-      }
-    }.check()
+    // Always bypass seat count check to allow unlimited seats
+    return
   }
 
   @CacheEvict(Caches.Companion.EE_SUBSCRIPTION, key = "1")

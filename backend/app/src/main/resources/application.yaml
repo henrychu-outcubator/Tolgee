@@ -32,13 +32,27 @@ spring:
       initialize-schema: always
 tolgee:
   authentication:
-    enabled: false
+    enabled: true
+    initial-username: admin
+    initial-password: Ez654321
+    create-demo-for-initial-user: false
   postgres-autostart:
     enabled: true
   cache:
     enabled: true
     use-redis: false
     default-ttl: 1200000
+  llm:
+    enabled: true
+    providers:
+      - name: "Outcubator LLM Model"
+        type: CUSTOM_OPENAI
+        enabled: true
+        api-key: "your-api-key-here"
+        # api-url: "http://localhost:3003"
+        api-url: "https://gpu.stuffio.com"
+        model: "openai/gpt-oss-120b"
+        priority: HIGH
 server:
   compression:
     enabled: true
