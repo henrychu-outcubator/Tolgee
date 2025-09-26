@@ -1,0 +1,271 @@
+/*
+ * Copyright (c) 2020. Tolgee
+ */
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+
+plugins {
+    id 'io.spring.dependency-management'
+    id 'org.springframework.boot' apply false
+    id 'java'
+    id 'org.liquibase.gradle'
+    id 'org.jetbrains.kotlin.jvm'
+    id "kotlin-jpa"
+    id "org.jetbrains.kotlin.kapt" // kapt still needed for Hibernate -- https://hibernate.atlassian.net/browse/HHH-15376
+    id "kotlin-allopen"
+    id "org.hibernate.orm"
+    id "io.sentry.jvm.gradle"
+}
+
+group = 'io.tolgee'
+
+if (System.getenv().containsKey("VERSION")) {
+    project.version = System.getenv().get("VERSION")
+} else {
+    project.version = 'local'
+}
+
+configurations {
+    ktlint
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "org.jetbrains.kotlin.plugin.jpa"
+apply plugin: "org.jetbrains.kotlin.plugin.spring"
+apply plugin: "kotlin-allopen"
+apply plugin: "kotlin-kapt" // kapt still needed for Hibernate -- https://hibernate.atlassian.net/browse/HHH-15376
+apply plugin: 'kotlin'
+apply plugin: 'org.hibernate.orm'
+
+repositories {
+    mavenCentral()
+}
+
+idea {
+    module {
+        generatedSourceDirs += files('build/generated/source/kapt/main', 'build/generated/source/kaptKotlin/main')
+    }
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+    annotation("org.springframework.stereotype.Component")
+    annotation("org.springframework.transaction.annotation.Transactional")
+    annotation("org.springframework.stereotype.Service")
+    annotation("org.springframework.beans.factory.annotation.Configurable")
+}
+
+apply from: "$rootDir/gradle/liquibase.gradle"
+
+configureLiquibase("public", "hibernate:spring:io.tolgee", 'src/main/resources/db/changelog/schema.xml')
+
+diff.dependsOn compileKotlin
+diffChangelog.dependsOn compileKotlin
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+dependencies {
+    /**
+     * SPRING
+     */
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation("org.springframework.data:spring-data-envers")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation('org.springframework.boot:spring-boot-starter-mail') {
+        exclude group: 'org.eclipse.angus', module: 'jakarta.mail'
+    }
+    implementation libs.jakartaMail
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    implementation "org.springframework.boot:spring-boot-starter-batch"
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    /**
+     * DB
+     */
+    implementation 'org.postgresql:postgresql'
+    implementation "org.hibernate:hibernate-jpamodelgen:$hibernateVersion"
+    kapt "org.hibernate:hibernate-jpamodelgen:$hibernateVersion"
+
+    /**
+     * Redisson
+     */
+    implementation libs.redissonSpringBootStarter
+
+    /**
+     * Liquibase
+     */
+    implementation libs.liquibaseCore
+    liquibaseRuntime libs.liquibaseCore
+    liquibaseRuntime libs.jacksonModuleKotlin
+    liquibaseRuntime libs.liquibasePicoli
+    liquibaseRuntime 'org.postgresql:postgresql'
+    liquibaseRuntime('org.liquibase:liquibase-groovy-dsl:3.0.2')
+    liquibaseRuntime libs.liquibaseHibernate
+    liquibaseRuntime libs.kotlinReflect
+    liquibaseRuntime sourceSets.main.output
+    liquibaseRuntime 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    /**
+     * Testing
+     */
+    implementation libs.assertJCore
+    implementation libs.springmockk
+    testImplementation libs.mockito
+    implementation libs.jsonUnitAssert
+    testImplementation(project(":testing"))
+    ktlint(project(":ktlint"))
+
+    /**
+     * Kotlin
+     */
+    implementation libs.kotlinReflect
+    liquibaseRuntime libs.kotlinReflect
+    implementation libs.kotlinCoroutines
+
+    /**
+     * SPRING DOC
+     */
+    implementation libs.springDocOpenApiCommon
+
+    /**
+     * MISC
+     */
+    implementation libs.commonsCodec
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
+    implementation libs.icu4j
+    implementation libs.jjwtApi
+    implementation libs.jjwtImpl
+    implementation libs.jjwtJackson
+    implementation libs.jacksonModuleKotlin
+    implementation 'net.datafaker:datafaker:2.4.4'
+    implementation 'jaxen:jaxen:1.2.0'
+    implementation(libs.mailjet)
+    implementation libs.hibernateTypes
+    liquibaseRuntime libs.hibernateTypes
+    implementation 'com.eatthepath:java-otp:0.4.0'
+    implementation libs.postHog
+    implementation libs.micrometerPrometheus
+    implementation 'org.dom4j:dom4j:2.1.4'
+    implementation libs.jacksonKotlin
+    implementation("org.apache.commons:commons-configuration2:2.10.1")
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+    implementation("com.fasterxml.woodstox:woodstox-core:7.1.1")
+
+    /**
+     * Table formats
+     */
+    implementation("com.opencsv:opencsv:5.11.1")
+    implementation 'org.apache.poi:poi:5.4.0'
+    implementation 'org.apache.poi:poi-ooxml:5.4.0'
+
+    /**
+     * Google translation API
+     */
+    implementation platform(libs.googleCloud)
+    implementation 'com.google.cloud:google-cloud-translate'
+
+    /**
+     * AWS
+     */
+    implementation libs.amazonS3
+    implementation libs.amazonTranslate
+    implementation libs.cloudfront
+
+    /**
+     * MISC MODULE
+     */
+    implementation(project(':misc'))
+
+
+    /**
+     * AZURE
+     */
+    implementation(libs.azureBlob)
+    implementation('io.netty:netty-codec-http:4.2.5.Final')
+    implementation('io.netty:netty-codec-http2:4.2.5.Final')
+    implementation('io.netty:netty-handler:4.2.5.Final')
+
+    /**
+     * SLACK SDK
+     */
+    implementation libs.slackApiClient
+    implementation libs.slackApiModelKotlinExtension
+    implementation libs.slackApiClientKotlinExtension
+
+    /**
+     * HANDLEBARS
+     */
+    implementation('com.github.jknack:handlebars:4.4.0')
+}
+
+test {
+    useJUnitPlatform()
+    maxHeapSize = "4096m"
+}
+
+sourceSets {
+    main.kotlin.srcDirs = ['src/main/kotlin', 'src/main/java']
+    test.kotlin.srcDirs = ['src/test/kotlin', 'src/test/java']
+}
+
+dependencyManagement {
+    applyMavenExclusions = false
+
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+        mavenBom 'org.junit:junit-bom:5.11.4'
+    }
+}
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
+ktlint {
+    debug = true
+    verbose = true
+    filter {
+        exclude("**/PluralData.kt")
+    }
+}
+
+hibernate {
+    // Block is required for Bytecode Enhancement to happen
+    enhancement {}
+}

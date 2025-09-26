@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2020. Tolgee
+ */
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'io.spring.dependency-management'
+    id 'org.springframework.boot' apply false
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+    id "kotlin-jpa"
+    id "kotlin-allopen"
+}
+
+group = 'io.tolgee'
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    ktlint
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "org.jetbrains.kotlin.plugin.jpa"
+apply plugin: "kotlin-allopen"
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+    annotation("org.springframework.stereotype.Component")
+    annotation("org.springframework.transaction.annotation.Transactional")
+    annotation("org.springframework.stereotype.Service")
+    annotation("org.springframework.beans.factory.annotation.Configurable")
+}
+
+dependencies {
+    /**
+     * SPRING
+     */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation "org.springframework.boot:spring-boot-configuration-processor"
+    implementation project(":data")
+    implementation libs.springDocOpenApiCommon
+    implementation libs.springDocWebmvcApi
+    implementation libs.kotlinReflect
+    implementation libs.kotlinCoroutines
+
+    if (gradle.ext.eeAppDirectoryExists) {
+        implementation project(":ee-app")
+    }
+
+    ktlint(project(":ktlint"))
+}
+
+sourceSets {
+    main.kotlin.srcDirs = ['src/main/kotlin', 'src/main/java']
+    test.kotlin.srcDirs = ['src/test/kotlin', 'src/test/java']
+}
+
+dependencyManagement {
+    applyMavenExclusions = false
+
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}

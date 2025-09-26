@@ -1,0 +1,65 @@
+{
+  "name": "@tolgee/server",
+  "scripts": {
+    "release": "semantic-release",
+    "release-dry": "semantic-release --no-ci -d",
+    "release-dry-debug": "semantic-release --no-ci -d --debug",
+    "init-husky": "node ./webapp/node_modules/husky/bin.mjs"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.4",
+    "semantic-release": "^19.0.2"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "webapp/src/i18n"
+          ]
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "successComment": false,
+          "assets": [
+            {
+              "path": "./build/libs/tolgee.jar",
+              "name": "tolgee-${ nextRelease.version }.jar"
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "verifyReleaseCmd": "echo ${nextRelease.version} > .VERSION"
+        }
+      ]
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "channel": "latest",
+        "prerelease": false
+      },
+      {
+        "name": "beta",
+        "prerelease": true
+      },
+      {
+        "name": "tolgee-3",
+        "prerelease": "alpha"
+      }
+    ]
+  }
+}

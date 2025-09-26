@@ -1,0 +1,84 @@
+build
+*.iml
+**/application-dev.properties
+**/application-dev.yaml
+**/application-dev-*.yaml
+**/application-local.yaml
+**/application-postgres.yaml
+**/application-testing.yaml
+
+bin
+server.iml
+trace.db
+
+webapp/node_modules/
+webapp/lib
+webapp/dist
+**/*.iml
+webapp/.env.dev
+e2e/cypress/videos
+e2e/cypress/screenshots
+e2e/cypress/downloads
+e2e/node_modules
+e2e/cypress/integration/examples/
+.gradle
+.kotlin
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/webapp/node_modules
+/webapp/.pnp
+/webapp/.pnp.js
+
+# testing
+/webapp/coverage
+
+# production
+/webapp/build
+
+# misc
+/webapp/.DS_Store
+/webapp/.env.local
+/webapp/.env.development.local
+/webapp/.env.test.local
+/webapp/.env.production.local
+/webapp/src/eeSetup/eeModule.current.tsx
+
+/webapp/npm-debug.log*
+/webapp/yarn-debug.log*
+/webapp/yarn-error.log*
+
+/**/.vscode
+
+/**/.idea
+.VERSION
+
+/node_modules
+/**/.DS_Store
+server.ipr
+server.iws
+**/derby.log
+
+backend/app/src/main/resources/application-js-e2e.properties
+
+/backend/*/build
+/backend/*/out
+/gradle-user-home
+/profile-out
+/.stash*
+
+/webapp/src/branch.json
+
+ngrok.yml
+ngrok.local.yml
+
+# Local developer workstuff
+/.local
+
+# IDEs and tools
+.cursorrules
+.cursorignore
+
+# Sentry Config File
+/webapp/.env.sentry-build-plugin

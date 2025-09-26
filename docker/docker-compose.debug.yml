@@ -1,0 +1,12 @@
+services:
+  app:
+    image: tolgee/tolgee
+    ports:
+      - "8090:8080"
+      - "8091:8091"
+    env_file:
+      - .env
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:8091,server=y,suspend=n
+    depends_on:
+      - "db"

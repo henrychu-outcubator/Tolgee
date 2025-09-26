@@ -1,0 +1,15 @@
+spring:
+  liquibase:
+    drop-first: true
+    change-log: classpath:db/changelog/schema.xml
+  datasource:
+    url: jdbc:postgresql://localhost:55538/postgres
+    username: postgres
+    password: postgres
+tolgee:
+  postgres-autostart:
+    enabled: false
+  internal:
+    stop-right-after-start: true
+  telemetry:
+    enabled: false

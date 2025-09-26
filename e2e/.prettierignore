@@ -1,0 +1,5 @@
+**/*.json
+
+**/*.generated.*
+
+cypress/support/dataCyType.d.ts
